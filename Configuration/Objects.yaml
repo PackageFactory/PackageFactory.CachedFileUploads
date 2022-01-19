@@ -1,0 +1,9 @@
+PackageFactory\CachedFileUploads\Domain\Repository\UploadedFileRepository:
+  properties:
+    uploadedFileCache:
+      object:
+        factoryObjectName: Neos\Flow\Cache\CacheManager
+        factoryMethodName: getCache
+        arguments:
+          1:
+            value: PackageFactory_CachedFileUploads_Files

@@ -1,0 +1,6 @@
+PackageFactory_CachedFileUploads_Files:
+  frontend: Neos\Cache\Frontend\VariableFrontend
+  backend: Neos\Cache\Backend\FileBackend
+  persistent: true
+  backendOptions:
+    defaultLifetime: 86400

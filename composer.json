@@ -1,0 +1,21 @@
+{
+    "description": "",
+    "type": "neos-package",
+    "name": "packagefactory/cachedfileuploads",
+    "license": "GPL-3.0-or-later",
+    "require": {
+        "psr/http-factory": "*",
+        "psr/http-message": "*",
+        "neos/flow": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "PackageFactory\\CachedFileUploads\\": "Classes/"
+        }
+    },
+    "extra": {
+        "neos": {
+            "package-key": "PackageFactory.CachedFileUploads"
+        }
+    }
+}
