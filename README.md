@@ -24,7 +24,7 @@ PackageFactory_CachedFileUploads_Files:
 You can use the package in the fusion forms like this. The followimg is needed:
 
 1. An input for property `file` rendered by `Vendor.Site:Form.Upload` until `Neos.Fusion.Form:Upload` is adjusted.
-2. A schema `Form.Schema.forType('PackageFactory\CachedFileUploads\Domain\Model\UploadedFile')` for the file property   
+2. A schema `Form.Schema.forType('PackageFactory\CachedFileUploads\Domain\UploadedFile')` for the file property   
 3. Optionally a validator `PackageFactory\CachedFileUploads\Validator\UploadedFileTypeValidator'` for the file property
 4. A form action that uses the uploaded file in the form action via {data.file} 
 
@@ -39,7 +39,7 @@ prototype(Vendor.Site:Content.FileUploadForm)  < prototype(Neos.Fusion.Form:Comp
                 </Neos.Fusion.Form:FieldContainer>
             `
             schema {
-                file = ${Form.Schema.forType('PackageFactory\CachedFileUploads\Domain\Model\UploadedFile').isRequired().validator('PackageFactory\CachedFileUploads\Validator\UploadedFileTypeValidator', {allowedExtensions:['txt', 'jpg']})}
+                file = ${Form.Schema.forType('PackageFactory\CachedFileUploads\Domain\UploadedFile').isRequired().validator('PackageFactory\CachedFileUploads\Validator\UploadedFileTypeValidator', {allowedExtensions:['txt', 'jpg']})}
             }
         }
 
@@ -80,7 +80,7 @@ prototype(Vendor.Site:Form.Upload)  < prototype(Neos.Fusion.Form:Component.Field
         />
         <!-- cached file uploads -->
         <input
-            @if.has={Type.instance(field.getCurrentValue(), 'PackageFactory\CachedFileUploads\Domain\Model\UploadedFile')}
+            @if.has={Type.instance(field.getCurrentValue(), 'PackageFactory\CachedFileUploads\Domain\UploadedFile')}
             type="hidden" name={field.getName() + '[originallySubmittedResource][__identity]'}
             value={field.getCurrentValueStringified()}
         />

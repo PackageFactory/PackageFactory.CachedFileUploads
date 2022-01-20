@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace PackageFactory\CachedFileUploads\Domain\Model;
+namespace PackageFactory\CachedFileUploads\Domain;
 
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Utility\Algorithms;

@@ -17,8 +17,8 @@ use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Property\PropertyMappingConfigurationInterface;
 use Neos\Flow\Property\TypeConverter\AbstractTypeConverter;
 use Neos\Http\Factories\FlowUploadedFile;
-use PackageFactory\CachedFileUploads\Domain\Model\UploadedFile;
-use PackageFactory\CachedFileUploads\Domain\Repository\UploadedFileRepository;
+use Neos\Cache\Frontend\VariableFrontend;
+use PackageFactory\CachedFileUploads\Domain\UploadedFile;
 use Psr\Http\Message\UploadedFileInterface;
 
 /**
@@ -48,9 +48,9 @@ class UploadedFileConverter extends AbstractTypeConverter
 
     /**
      * @Flow\Inject
-     * @var UploadedFileRepository
+     * @var VariableFrontend
      */
-    protected $uploadedFileRepository;
+    protected $uploadedFileCache;
 
     /**
      * This implementation always returns true for this method.
@@ -78,9 +78,9 @@ class UploadedFileConverter extends AbstractTypeConverter
     {
         if ($originalResource = $source->getOriginallySubmittedResource()) {
             if (is_array($originalResource) && array_key_exists('__identity', $originalResource)) {
-                return $this->uploadedFileRepository->findByIdentifier($originalResource['__identity']);
+                return $this->uploadedFileCache->get($originalResource['__identity']);
             } elseif (is_string($originalResource)) {
-                return $this->uploadedFileRepository->findByIdentifier($originalResource);
+                return $this->uploadedFileCache->get($originalResource);
             }
         }
 
@@ -89,7 +89,7 @@ class UploadedFileConverter extends AbstractTypeConverter
         }
 
         $uploadedFile = UploadedFile::fromUploadedFile($source);
-        $this->uploadedFileRepository->add($uploadedFile);
+        $this->uploadedFileCache->set($uploadedFile->getIdentifier(), $uploadedFile);
 
         return $uploadedFile;
     }

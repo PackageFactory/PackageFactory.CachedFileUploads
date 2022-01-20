@@ -16,7 +16,7 @@ namespace PackageFactory\CachedFileUploads\TypeConverter;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Property\PropertyMappingConfigurationInterface;
 use Neos\Flow\Property\TypeConverter\AbstractTypeConverter;
-use PackageFactory\CachedFileUploads\Domain\Model\UploadedFile;
+use PackageFactory\CachedFileUploads\Domain\UploadedFile;
 
 /**
  * This converter transforms a session identifier into a real session object.
