@@ -3,20 +3,10 @@ declare(strict_types=1);
 
 namespace PackageFactory\CachedFileUploads\TypeConverter;
 
-/*
- * This file is part of the Neos.Flow package.
- *
- * (c) Contributors of the Neos Project - www.neos.io
- *
- * This package is Open Source Software. For the full copyright and license
- * information, please view the LICENSE file which was distributed with this
- * source code.
- */
-
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Property\PropertyMappingConfigurationInterface;
 use Neos\Flow\Property\TypeConverter\AbstractTypeConverter;
-use PackageFactory\CachedFileUploads\Domain\UploadedFile;
+use PackageFactory\CachedFileUploads\Domain\CachedFileUpload;
 
 /**
  * This converter transforms a session identifier into a real session object.
@@ -31,7 +21,7 @@ class StringConverter extends AbstractTypeConverter
     /**
      * @var array
      */
-    protected $sourceTypes = [UploadedFile::class];
+    protected $sourceTypes = [CachedFileUpload::class];
 
     /**
      * @var string
@@ -53,13 +43,13 @@ class StringConverter extends AbstractTypeConverter
      */
     public function canConvertFrom($source, $targetType)
     {
-        return ($source instanceof UploadedFile);
+        return ($source instanceof CachedFileUpload);
     }
 
     /**
      * Convert an UploadedFileInterface to CachableUplaodedFile
      *
-     * @param UploadedFile $source
+     * @param CachedFileUpload $source
      * @param string $targetType
      * @param array $convertedChildProperties
      * @param PropertyMappingConfigurationInterface|null $configuration

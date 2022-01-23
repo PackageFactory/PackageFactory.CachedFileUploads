@@ -3,22 +3,35 @@
 
 !!! This is an experimental prototype to validate the feasibility. It should not be used in projects !!!
 
-Uploaded files are stored in a persistent cache and not imported as resources. 
-This makes it much easier to get rid of them again.
+Uploaded files are stored in persistent caches and are not imported as resources. 
+This makes it much easier to get rid of them again as they are deleted automatically once the caches expire
+or can be flushed via `./flow flow:cache:flush` or `./flow cache:collectgarbage`.
 
 ## Cache Configuration
 
-The Cache is configured via Caches.yaml it may be necessary to adjust the `defaultLifetime` or the used `backend`
-for your Environment.
+The Cache is configured via Caches.yaml. It may be necessary to adjust the `defaultLifetime` or the used `backend`
+for the actual environment.
+
 ```
-PackageFactory_CachedFileUploads_Files:
+# Metadata of the files
+#
+PackageFactory_CachedFileUploads_File:
   frontend: Neos\Cache\Frontend\VariableFrontend
   backend: Neos\Cache\Backend\FileBackend
   persistent: true
   backendOptions:
     defaultLifetime: 86400
-
+    
+# File content
+#
+PackageFactory_CachedFileUploads_Content:
+  frontend: Neos\Cache\Frontend\StringFrontend
+  backend: Neos\Cache\Backend\FileBackend
+  persistent: true
+  backendOptions:
+    defaultLifetime: 86400
 ```
+
 ## Usage in Forms
 
 You can use the package in the fusion forms like this. The followimg is needed:
@@ -35,11 +48,11 @@ prototype(Vendor.Site:Content.FileUploadForm)  < prototype(Neos.Fusion.Form:Comp
         process {
             content = afx`
                 <Neos.Fusion.Form:FieldContainer label="Message" field.name="file" attributes.class="form-group clearfix">
-                    <Vendor.Site:Form.Upload attributes.class="form-control" />
+                    <PackageFactory.CachedFileUploads:FileUpload attributes.class="form-control" />
                 </Neos.Fusion.Form:FieldContainer>
             `
             schema {
-                file = ${Form.Schema.forType('PackageFactory\CachedFileUploads\Domain\UploadedFile').isRequired().validator('PackageFactory\CachedFileUploads\Validator\UploadedFileTypeValidator', {allowedExtensions:['txt', 'jpg']})}
+                file = ${Form.Schema.forType('PackageFactory\CachedFileUploads\Domain\CachedFileUpload').isRequired().validator('PackageFactory\CachedFileUploads\Validator\UploadedFileValidator', {allowedExtensions:['txt', 'jpg']})}
             }
         }
 
@@ -64,31 +77,4 @@ prototype(Vendor.Site:Content.FileUploadForm)  < prototype(Neos.Fusion.Form:Comp
 } 
 ```
 
-Until this can be integrated into `Neos.Fusion.Form:Upload` this has to be used 
-
-```
-prototype(Vendor.Site:Form.Upload)  < prototype(Neos.Fusion.Form:Component.Field) {
-
-    attributes.type = "file"
-
-    renderer = afx`
-        <!-- classic persistent resources -->
-        <input
-            @if.has={Type.instance(field.getCurrentValue(), 'Neos\Flow\ResourceManagement\PersistentResource')}
-            type="hidden" name={field.getName() + '[originallySubmittedResource][__identity]'}
-            value={field.getCurrentValueStringified()}
-        />
-        <!-- cached file uploads -->
-        <input
-            @if.has={Type.instance(field.getCurrentValue(), 'PackageFactory\CachedFileUploads\Domain\UploadedFile')}
-            type="hidden" name={field.getName() + '[originallySubmittedResource][__identity]'}
-            value={field.getCurrentValueStringified()}
-        />
-        <input
-            name={field.getName()}
-            {...props.attributes}
-        />
-    `
-}    
-
-```
+NOTE:: Until this can be integrated into `Neos.Fusion.Form:Upload` the prototype `PackageFactory.CachedFileUploads:FileUpload` has to be used

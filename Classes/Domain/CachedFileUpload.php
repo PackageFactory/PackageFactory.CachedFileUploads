@@ -4,12 +4,16 @@ declare(strict_types=1);
 namespace PackageFactory\CachedFileUploads\Domain;
 
 use Neos\Flow\Annotations as Flow;
+use Neos\Cache\Frontend\StringFrontend;
 use Neos\Flow\Utility\Algorithms;
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 
-class UploadedFile implements UploadedFileInterface
+/**
+ * @Flow\Entity
+ */
+class CachedFileUpload implements UploadedFileInterface, \JsonSerializable
 {
     /**
      * @Flow\Inject
@@ -18,7 +22,14 @@ class UploadedFile implements UploadedFileInterface
     protected $streamFactory;
 
     /**
+     * @Flow\Inject
+     * @var StringFrontend
+     */
+    protected $contentCache;
+
+    /**
      * @var string
+     * @Flow\Identity
      */
     protected $identifier;
 
@@ -35,7 +46,7 @@ class UploadedFile implements UploadedFileInterface
     /**
      * @var int
      */
-    protected $errorStatus;
+    protected $error;
 
     /**
      * @var string
@@ -50,31 +61,43 @@ class UploadedFile implements UploadedFileInterface
     /**
      * UploadedFile constructor.
      *
-     * @param string $identifier
      * @param string $content
      * @param int $size
-     * @param int $errorStatus
+     * @param int $error
      * @param string|null $clientFilename
      * @param string|null $clientMediaType
      */
-    protected function __construct(string $identifier, string $content, int $size, int $errorStatus, string $clientFilename = null, string $clientMediaType = null)
+    protected function __construct(string $content, int $size, int $error, string $clientFilename = null, string $clientMediaType = null)
     {
-        $this->identifier = $identifier;
+        $this->identifier = Algorithms::generateUUID();
         $this->content = $content;
         $this->size = $size;
-        $this->errorStatus = $errorStatus;
+        $this->error = $error;
         $this->clientFilename = $clientFilename;
         $this->clientMediaType = $clientMediaType;
     }
 
     /**
+     * on initialize the content is stored in the cache aswell
+     * because the serialisation will skip the content part
+     *
+     * @return void
+     * @throws \Neos\Cache\Exception
+     */
+    public function initializeObject()
+    {
+        if ($this->content) {
+            $this->contentCache->set($this->identifier, $this->content);
+        }
+    }
+
+    /**
      * @param UploadedFileInterface $uploadedFile
-     * @return UploadedFile
+     * @return CachedFileUpload
      */
     public static function fromUploadedFile(UploadedFileInterface $uploadedFile): self
     {
         return new static(
-            Algorithms::generateUUID(),
             $uploadedFile->getStream()->getContents(),
             $uploadedFile->getSize(),
             $uploadedFile->getError(),
@@ -88,12 +111,20 @@ class UploadedFile implements UploadedFileInterface
      */
     public function getStream()
     {
+        if (is_null($this->content)) {
+            $cacheResult = $this->contentCache->get($this->getIdentifier());
+            if ($cacheResult === false) {
+                throw new \Exception('file content not found');
+            } else {
+                $this->content = $cacheResult;
+            }
+        }
         return $this->streamFactory->createStream($this->content);
     }
 
     public function moveTo($targetPath)
     {
-        throw new \Exception("moveTo is not implemented");
+        throw new \Exception('moveTo is not implemented');
     }
 
     /**
@@ -101,7 +132,7 @@ class UploadedFile implements UploadedFileInterface
      */
     public function getSize()
     {
-        return $this->errorStatus;
+        return $this->size;
     }
 
     /**
@@ -142,5 +173,30 @@ class UploadedFile implements UploadedFileInterface
     public function __toString(): string
     {
         return $this->identifier;
+    }
+
+    /**
+     * @return array
+     */
+    public function __sleep()
+    {
+        // content is not serialized
+        $this->content = null;
+        return ['identifier', 'size', 'error', 'clientFilename', 'clientMediaType'];
+    }
+
+    /**
+     * Mainly for debugging
+     * @return array
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'identifier' => $this->getIdentifier(),
+            'size' => $this->getSize(),
+            'error' => $this->getError(),
+            'clientFilename' => $this->getClientFilename(),
+            'clientMediaType' => $this->getClientMediaType()
+        ];
     }
 }

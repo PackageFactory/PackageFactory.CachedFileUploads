@@ -3,22 +3,12 @@ declare(strict_types=1);
 
 namespace PackageFactory\CachedFileUploads\TypeConverter;
 
-/*
- * This file is part of the Neos.Flow package.
- *
- * (c) Contributors of the Neos Project - www.neos.io
- *
- * This package is Open Source Software. For the full copyright and license
- * information, please view the LICENSE file which was distributed with this
- * source code.
- */
-
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Property\PropertyMappingConfigurationInterface;
 use Neos\Flow\Property\TypeConverter\AbstractTypeConverter;
 use Neos\Http\Factories\FlowUploadedFile;
-use Neos\Cache\Frontend\VariableFrontend;
-use PackageFactory\CachedFileUploads\Domain\UploadedFile;
+use PackageFactory\CachedFileUploads\Domain\CachedFileUpload;
+use PackageFactory\CachedFileUploads\Domain\CachedFileUploadRepository;
 use Psr\Http\Message\UploadedFileInterface;
 
 /**
@@ -29,8 +19,14 @@ use Psr\Http\Message\UploadedFileInterface;
  * @api
  * @Flow\Scope("singleton")
  */
-class UploadedFileConverter extends AbstractTypeConverter
+class CachedFileUploadConverter extends AbstractTypeConverter
 {
+    /**
+     * @var CachedFileUploadRepository
+     * @Flow\Inject
+     */
+    protected $cachedFileUploadRepository;
+
     /**
      * @var array
      */
@@ -39,18 +35,12 @@ class UploadedFileConverter extends AbstractTypeConverter
     /**
      * @var string
      */
-    protected $targetType = UploadedFile::class;
+    protected $targetType = CachedFileUpload::class;
 
     /**
      * @var integer
      */
     protected $priority = 1;
-
-    /**
-     * @Flow\Inject
-     * @var VariableFrontend
-     */
-    protected $uploadedFileCache;
 
     /**
      * This implementation always returns true for this method.
@@ -78,9 +68,9 @@ class UploadedFileConverter extends AbstractTypeConverter
     {
         if ($originalResource = $source->getOriginallySubmittedResource()) {
             if (is_array($originalResource) && array_key_exists('__identity', $originalResource)) {
-                return $this->uploadedFileCache->get($originalResource['__identity']);
+                return $this->cachedFileUploadRepository->findByIdentifier($originalResource['__identity']);
             } elseif (is_string($originalResource)) {
-                return $this->uploadedFileCache->get($originalResource);
+                return $this->cachedFileUploadRepository->findByIdentifier($originalResource);
             }
         }
 
@@ -88,9 +78,8 @@ class UploadedFileConverter extends AbstractTypeConverter
             return null;
         }
 
-        $uploadedFile = UploadedFile::fromUploadedFile($source);
-        $this->uploadedFileCache->set($uploadedFile->getIdentifier(), $uploadedFile);
-
+        $uploadedFile = CachedFileUpload::fromUploadedFile($source);
+        $this->cachedFileUploadRepository->add($uploadedFile);
         return $uploadedFile;
     }
 }

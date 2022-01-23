@@ -1,9 +1,19 @@
-PackageFactory\CachedFileUploads\TypeConverter\UploadedFileConverter:
+PackageFactory\CachedFileUploads\Domain\CachedFileUploadRepository:
   properties:
-    uploadedFileCache:
+    fileCache:
       object:
         factoryObjectName: Neos\Flow\Cache\CacheManager
         factoryMethodName: getCache
         arguments:
           1:
-            value: PackageFactory_CachedFileUploads_Files
+            value: PackageFactory_CachedFileUploads_File
+
+PackageFactory\CachedFileUploads\Domain\CachedFileUpload:
+  properties:
+    contentCache:
+      object:
+        factoryObjectName: Neos\Flow\Cache\CacheManager
+        factoryMethodName: getCache
+        arguments:
+          1:
+            value: PackageFactory_CachedFileUploads_Content

@@ -1,5 +1,16 @@
-PackageFactory_CachedFileUploads_Files:
+# Metadata of the files
+#
+PackageFactory_CachedFileUploads_File:
   frontend: Neos\Cache\Frontend\VariableFrontend
+  backend: Neos\Cache\Backend\FileBackend
+  persistent: true
+  backendOptions:
+    defaultLifetime: 86400
+
+# File content
+#
+PackageFactory_CachedFileUploads_Content:
+  frontend: Neos\Cache\Frontend\StringFrontend
   backend: Neos\Cache\Backend\FileBackend
   persistent: true
   backendOptions:
